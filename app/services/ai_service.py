@@ -120,7 +120,8 @@ def _parse_groq(text: str) -> dict:
     """Gọi Groq API (llama-3.3-70b-versatile — miễn phí)."""
     try:
         from groq import Groq
-        client = Groq(api_key=GROQ_API_KEY)
+        import httpx
+        client = Groq(api_key=GROQ_API_KEY, http_client=httpx.Client())
         chat = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
