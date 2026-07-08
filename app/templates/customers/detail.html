@@ -7,7 +7,7 @@
 <div class="page-header">
   <div class="page-header-left">
     <h1>{{ customer.name }}</h1>
-    <p>{% if customer.customer_type and customer.customer_type.value == 'business' %}🏢 Doanh nghiệp{% else %}👤 Cá nhân{% endif %}{% if customer.company_name %} — {{ customer.company_name }}{% endif %}</p>
+    <p>{% if customer.type and customer.type.value == 'business' %}🏢 Doanh nghiệp{% else %}👤 Cá nhân{% endif %}{% if customer.company_name %} — {{ customer.company_name }}{% endif %}</p>
   </div>
   <div class="page-header-actions">
     <a href="/customers" class="btn btn-secondary">← Danh sách</a>
@@ -24,7 +24,7 @@
     <div class="card">
       <div class="card-header"><div class="card-title">Thông tin khách hàng</div></div>
       <div class="card-body">
-        <div class="info-row"><span class="info-label">Loại</span><span class="info-value">{% if customer.customer_type and customer.customer_type.value == 'business' %}<span class="badge badge-blue">🏢 Doanh nghiệp</span>{% else %}<span class="badge badge-gray">👤 Cá nhân</span>{% endif %}</span></div>
+        <div class="info-row"><span class="info-label">Loại</span><span class="info-value">{% if customer.type and customer.type.value == 'business' %}<span class="badge badge-blue">🏢 Doanh nghiệp</span>{% else %}<span class="badge badge-gray">👤 Cá nhân</span>{% endif %}</span></div>
         <div class="info-row"><span class="info-label">Tên công ty</span><span class="info-value">{{ customer.company_name or '—' }}</span></div>
         <div class="info-row"><span class="info-label">Mã số thuế</span><span class="info-value">{{ customer.tax_code or '—' }}</span></div>
         <div class="info-row"><span class="info-label">Email</span><span class="info-value">{% if customer.email %}<a href="mailto:{{ customer.email }}" style="color:var(--primary);">{{ customer.email }}</a>{% else %}—{% endif %}</span></div>

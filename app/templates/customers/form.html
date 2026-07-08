@@ -24,9 +24,9 @@
 
         <div class="form-group">
           <label class="form-label">Loại khách hàng</label>
-          <select name="customer_type" class="form-control">
-            <option value="individual" {% if not customer or customer.customer_type.value == 'individual' %}selected{% endif %}>👤 Cá nhân</option>
-            <option value="business" {% if customer and customer.customer_type.value == 'business' %}selected{% endif %}>🏢 Doanh nghiệp</option>
+          <select name="type" class="form-control">
+            <option value="individual" {% if not customer or customer.type.value == 'individual' %}selected{% endif %}>👤 Cá nhân</option>
+            <option value="business" {% if customer and customer.type.value == 'business' %}selected{% endif %}>🏢 Doanh nghiệp</option>
           </select>
         </div>
 

@@ -58,7 +58,7 @@
             {% if c.company_name %}<div style="font-size:12px;color:var(--text-secondary);">{{ c.company_name }}</div>{% endif %}
           </td>
           <td>
-            {% if c.customer_type and c.customer_type.value == 'business' %}
+            {% if c.type and c.type.value == 'business' %}
               <span class="badge badge-blue">🏢 Doanh nghiệp</span>
             {% else %}
               <span class="badge badge-gray">👤 Cá nhân</span>
