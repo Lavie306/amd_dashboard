@@ -57,7 +57,7 @@ def new_server_form(
 def create_server(
     label: str = Form(...),
     customer_id: int = Form(...),
-    project_id: Optional[int] = Form(None),
+    project_id: Optional[str] = Form(None),
     type: str = Form(...),
     provider: Optional[str] = Form(None),
     ip_address: Optional[str] = Form(None),
@@ -70,10 +70,11 @@ def create_server(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    proj_id = int(project_id) if project_id and project_id.strip() else None
     server = Server(
         label=label,
         customer_id=customer_id,
-        project_id=project_id or None,
+        project_id=proj_id,
         type=ServerType(type),
         provider=provider,
         ip_address=ip_address,
@@ -131,7 +132,7 @@ def update_server(
     server_id: int,
     label: str = Form(...),
     customer_id: int = Form(...),
-    project_id: Optional[int] = Form(None),
+    project_id: Optional[str] = Form(None),
     type: str = Form(...),
     provider: Optional[str] = Form(None),
     ip_address: Optional[str] = Form(None),
@@ -147,9 +148,10 @@ def update_server(
     server = db.query(Server).filter(Server.id == server_id).first()
     if not server:
         raise HTTPException(status_code=404, detail="Không tìm thấy server")
+    proj_id = int(project_id) if project_id and project_id.strip() else None
     server.label = label
     server.customer_id = customer_id
-    server.project_id = project_id or None
+    server.project_id = proj_id
     server.type = ServerType(type)
     server.provider = provider
     server.ip_address = ip_address

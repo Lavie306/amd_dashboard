@@ -55,7 +55,7 @@ def new_domain_form(
 def create_domain(
     name: str = Form(...),
     customer_id: int = Form(...),
-    project_id: Optional[int] = Form(None),
+    project_id: Optional[str] = Form(None),
     registrar: Optional[str] = Form(None),
     registered_date: Optional[str] = Form(None),
     expiry_date: Optional[str] = Form(None),
@@ -65,10 +65,11 @@ def create_domain(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    proj_id = int(project_id) if project_id and project_id.strip() else None
     domain = Domain(
         domain_name=name,
         customer_id=customer_id,
-        project_id=project_id or None,
+        project_id=proj_id,
         registrar=registrar,
         registered_date=date.fromisoformat(registered_date) if registered_date else None,
         expiry_date=date.fromisoformat(expiry_date) if expiry_date else None,
@@ -122,7 +123,7 @@ def update_domain(
     domain_id: int,
     name: str = Form(...),
     customer_id: int = Form(...),
-    project_id: Optional[int] = Form(None),
+    project_id: Optional[str] = Form(None),
     registrar: Optional[str] = Form(None),
     registered_date: Optional[str] = Form(None),
     expiry_date: Optional[str] = Form(None),
@@ -135,9 +136,10 @@ def update_domain(
     domain = db.query(Domain).filter(Domain.id == domain_id).first()
     if not domain:
         raise HTTPException(status_code=404, detail="Không tìm thấy domain")
+    proj_id = int(project_id) if project_id and project_id.strip() else None
     domain.domain_name = name
     domain.customer_id = customer_id
-    domain.project_id = project_id or None
+    domain.project_id = proj_id
     domain.registrar = registrar
     domain.registered_date = date.fromisoformat(registered_date) if registered_date else None
     domain.expiry_date = date.fromisoformat(expiry_date) if expiry_date else None

@@ -56,7 +56,7 @@ def new_invoice_form(
 @router.post("/")
 def create_invoice(
     customer_id: int = Form(...),
-    project_id: Optional[int] = Form(None),
+    project_id: Optional[str] = Form(None),
     invoice_number: str = Form(...),
     issue_date: str = Form(...),
     amount: str = Form(...),
@@ -68,9 +68,10 @@ def create_invoice(
     amt = Decimal(amount)
     v = Decimal(vat)
     total = amt * (1 + v / 100)
+    proj_id = int(project_id) if project_id and project_id.strip() else None
     invoice = Invoice(
         customer_id=customer_id,
-        project_id=project_id or None,
+        project_id=proj_id,
         invoice_number=invoice_number,
         issue_date=date.fromisoformat(issue_date),
         amount=amt,
