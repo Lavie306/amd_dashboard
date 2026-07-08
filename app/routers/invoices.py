@@ -73,7 +73,7 @@ def create_invoice(
         customer_id=customer_id,
         project_id=proj_id,
         invoice_number=invoice_number,
-        issue_date=date.fromisoformat(issue_date),
+        issue_date=date.fromisoformat(issue_date) if issue_date and issue_date.strip() else date.today(),
         amount=amt,
         vat=v,
         total=total,
