@@ -1346,3 +1346,64 @@ select.form-control {
   color: var(--text-muted);
   font-size: 13px;
 }
+
+/* ── Search Suggestions ── */
+.search-container {
+  position: relative;
+  min-width: 320px;
+}
+
+.search-container .search-box {
+  min-width: 100%;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  margin-top: 8px;
+  display: none;
+  flex-direction: column;
+  z-index: 1010;
+  overflow: hidden;
+  max-height: 380px;
+}
+
+.search-suggestions.show {
+  display: flex;
+}
+
+.suggestion-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: var(--bg-main);
+}
+
+.suggestion-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.suggestion-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
