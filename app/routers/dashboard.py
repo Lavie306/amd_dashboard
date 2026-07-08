@@ -30,3 +30,37 @@ def dashboard(
             "stats": stats,
         },
     )
+
+
+@router.get("/api/alerts")
+def api_alerts(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """API trả về danh sách cảnh báo hết hạn để hiển thị ở Dropdown header."""
+    alerts = get_expiry_alerts(db, days=30)
+    today = alerts["today"]
+    return {
+        "total": alerts["total"],
+        "domains": [
+            {
+                "id": d.id,
+                "name": d.domain_name,
+                "days_left": (d.expiry_date - today).days if d.expiry_date else None,
+            } for d in alerts["domains"]
+        ],
+        "servers": [
+            {
+                "id": s.id,
+                "name": s.label,
+                "days_left": (s.expiry_date - today).days if s.expiry_date else None,
+            } for s in alerts["servers"]
+        ],
+        "managed_it": [
+            {
+                "id": m.id,
+                "name": m.name,
+                "days_left": (m.expiry_date - today).days if m.expiry_date else None,
+            } for m in alerts["managed_it"]
+        ]
+    }
