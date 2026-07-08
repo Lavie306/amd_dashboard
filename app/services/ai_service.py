@@ -81,6 +81,14 @@ def extract_text_from_file(file_path: str, original_filename: str) -> str:
         try:
             import pytesseract
             from PIL import Image
+            import shutil
+            
+            # Tự động phát hiện đường dẫn tesseract.exe trên Windows nếu không nằm trong PATH
+            if not shutil.which("tesseract"):
+                win_std_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                if os.path.exists(win_std_path):
+                    pytesseract.pytesseract.tesseract_cmd = win_std_path
+            
             img = Image.open(file_path)
             return pytesseract.image_to_string(img, lang="vie+eng")
         except Exception as e:
