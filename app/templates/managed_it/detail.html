@@ -20,7 +20,7 @@
   {% endif %}
   <div class="info-row"><span class="info-label">Khách hàng</span><span class="info-value"><a href="/customers/{{ package.customer_id }}" style="color:var(--primary);font-weight:600;">{{ package.customer.name if package.customer else '—' }}</a></span></div>
   <div class="info-row"><span class="info-label">Giá</span><span class="info-value" style="font-weight:700;color:var(--primary);">{% if package.price %}{{ "{:,.0f}".format(package.price) }}đ{% else %}—{% endif %}</span></div>
-  <div class="info-row"><span class="info-label">Chu kỳ</span><span class="info-value"><span class="badge badge-blue">{{ package.billing_cycle or '—' }}</span></span></div>
+  <div class="info-row"><span class="info-label">Chu kỳ</span><span class="info-value"><span class="badge badge-blue">{{ package.cycle.value if package.cycle else '—' }}</span></span></div>
   <div class="info-row"><span class="info-label">Ngày bắt đầu</span><span class="info-value">{{ package.start_date.strftime('%d/%m/%Y') if package.start_date else '—' }}</span></div>
   <div class="info-row"><span class="info-label">Ngày hết hạn</span><span class="info-value">{{ package.expiry_date.strftime('%d/%m/%Y') if package.expiry_date else '—' }}{% if days_left is not none %} <span class="badge {% if days_left <= 7 %}days-critical{% elif days_left <= 30 %}days-warning{% else %}days-ok{% endif %}">{{ days_left }} ngày</span>{% endif %}</span></div>
   <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge {% if package.status.value == 'active' %}badge-green{% elif package.status.value == 'expired' %}badge-red{% else %}badge-gray{% endif %}">{{ package.status.value }}</span></span></div>

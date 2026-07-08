@@ -34,8 +34,8 @@
       </div>
       <div class="form-group">
         <label class="form-label">Chu kỳ thanh toán</label>
-        <select name="billing_cycle" class="form-control">
-          {% for c in cycles %}<option value="{{ c }}" {% if package and package.billing_cycle==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        <select name="cycle" class="form-control">
+          {% for c in cycles %}<option value="{{ c }}" {% if package and package.cycle.value==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
         </select>
       </div>
       <div class="form-group">

@@ -35,7 +35,7 @@
         <tr>
           <td style="font-weight:700;">{{ pkg.name }}</td>
           <td><a href="/customers/{{ pkg.customer_id }}" style="color:var(--primary);text-decoration:none;font-weight:600;">{{ pkg.customer.name if pkg.customer else '—' }}</a></td>
-          <td><span class="badge badge-blue">{{ pkg.billing_cycle or '—' }}</span></td>
+          <td><span class="badge badge-blue">{{ pkg.cycle.value if pkg.cycle else '—' }}</span></td>
           <td style="font-weight:600;">{% if pkg.price %}{{ "{:,.0f}".format(pkg.price) }}đ{% else %}—{% endif %}</td>
           <td style="color:var(--text-secondary);">{{ pkg.start_date.strftime('%d/%m/%Y') if pkg.start_date else '—' }}</td>
           <td style="color:var(--text-secondary);">{{ pkg.expiry_date.strftime('%d/%m/%Y') if pkg.expiry_date else '—' }}</td>
