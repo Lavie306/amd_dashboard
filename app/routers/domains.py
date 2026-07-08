@@ -53,7 +53,7 @@ def new_domain_form(
 
 @router.post("/")
 def create_domain(
-    name: str = Form(...),
+    domain_name: str = Form(...),
     customer_id: int = Form(...),
     project_id: Optional[str] = Form(None),
     registrar: Optional[str] = Form(None),
@@ -67,7 +67,7 @@ def create_domain(
 ):
     proj_id = int(project_id) if project_id and project_id.strip() else None
     domain = Domain(
-        domain_name=name,
+        domain_name=domain_name,
         customer_id=customer_id,
         project_id=proj_id,
         registrar=registrar,
@@ -121,7 +121,7 @@ def edit_domain_form(
 @router.post("/{domain_id}/update")
 def update_domain(
     domain_id: int,
-    name: str = Form(...),
+    domain_name: str = Form(...),
     customer_id: int = Form(...),
     project_id: Optional[str] = Form(None),
     registrar: Optional[str] = Form(None),
@@ -137,7 +137,7 @@ def update_domain(
     if not domain:
         raise HTTPException(status_code=404, detail="Không tìm thấy domain")
     proj_id = int(project_id) if project_id and project_id.strip() else None
-    domain.domain_name = name
+    domain.domain_name = domain_name
     domain.customer_id = customer_id
     domain.project_id = proj_id
     domain.registrar = registrar

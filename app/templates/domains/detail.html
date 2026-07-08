@@ -28,7 +28,7 @@
     {% if domain.project %}<div class="info-row"><span class="info-label">Dự án</span><span class="info-value"><a href="/projects/{{ domain.project_id }}" style="color:var(--primary);">{{ domain.project.name }}</a></span></div>{% endif %}
     <div class="info-row"><span class="info-label">Nhà đăng ký</span><span class="info-value">{{ domain.registrar or '—' }}</span></div>
     <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge {% if domain.status.value == 'active' %}badge-green{% elif domain.status.value == 'expired' %}badge-red{% else %}badge-gray{% endif %}">{{ domain.status.value }}</span></span></div>
-    <div class="info-row"><span class="info-label">Ngày đăng ký</span><span class="info-value">{{ domain.registration_date.strftime('%d/%m/%Y') if domain.registration_date else '—' }}</span></div>
+    <div class="info-row"><span class="info-label">Ngày đăng ký</span><span class="info-value">{{ domain.registered_date.strftime('%d/%m/%Y') if domain.registered_date else '—' }}</span></div>
     <div class="info-row">
       <span class="info-label">Ngày hết hạn</span>
       <span class="info-value">
