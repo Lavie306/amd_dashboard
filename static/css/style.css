@@ -12,7 +12,7 @@
 :root {
   --sidebar-bg:     #0f1f4b;
   --sidebar-hover:  #1a3a7c;
-  --sidebar-active: #3b82f6;
+  --sidebar-active: #3a86ff;
   --sidebar-text:   #94aed6;
   --sidebar-text-active: #ffffff;
   --sidebar-width:  240px;
@@ -21,9 +21,9 @@
   --bg-card:        #ffffff;
   --bg-header:      #ffffff;
 
-  --primary:        #3b82f6;
-  --primary-dark:   #1d4ed8;
-  --primary-light:  #dbeafe;
+  --primary:        #3a86ff;
+  --primary-dark:   #2563eb;
+  --primary-light:  #e0ecff;
   --accent:         #10b981;
   --accent-light:   #d1fae5;
   --warning:        #f59e0b;
