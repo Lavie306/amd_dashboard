@@ -1,1 +1,78 @@
-Server form
+{% extends "base.html" %}
+{% block title %}{% if server %}Sửa Server{% else %}Thêm Server{% endif %}{% endblock %}
+{% block page_title %}{% if server %}Sửa server{% else %}Thêm server mới{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{% if server %}Sửa: {{ server.label }}{% else %}Thêm server mới{% endif %}</h1></div>
+  <div class="page-header-actions"><a href="/servers" class="btn btn-secondary">← Quay lại</a></div>
+</div>
+<div class="card"><div class="card-body">
+  <form method="post" action="{% if server %}/servers/{{ server.id }}/update{% else %}/servers/{% endif %}">
+    <div class="form-grid">
+      <div class="form-group col-span-2">
+        <label class="form-label">Nhãn server <span class="required">*</span></label>
+        <input type="text" name="label" class="form-control" value="{{ server.label if server else '' }}" placeholder="Web Server ABC Corp" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Khách hàng <span class="required">*</span></label>
+        <select name="customer_id" class="form-control" required>
+          <option value="">— Chọn khách hàng —</option>
+          {% for c in customers %}<option value="{{ c.id }}" {% if server and server.customer_id==c.id %}selected{% elif request.query_params.get('customer_id')|int==c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dự án liên quan</label>
+        <select name="project_id" class="form-control">
+          <option value="">— Không liên kết —</option>
+          {% for p in projects %}<option value="{{ p.id }}" {% if server and server.project_id==p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Loại server</label>
+        <select name="type" class="form-control">
+          {% for t in server_types %}<option value="{{ t }}" {% if server and server.type.value==t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Provider / Nhà cung cấp</label>
+        <input type="text" name="provider" class="form-control" value="{{ server.provider if server else '' }}" placeholder="Vultr, DigitalOcean, VNPT Cloud...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Địa chỉ IP</label>
+        <input type="text" name="ip_address" class="form-control" value="{{ server.ip_address if server else '' }}" placeholder="103.x.x.x">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hệ điều hành</label>
+        <input type="text" name="os" class="form-control" value="{{ server.os if server else '' }}" placeholder="Ubuntu 22.04 LTS">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày mua / bắt đầu</label>
+        <input type="date" name="purchase_date" class="form-control" value="{{ server.purchase_date.strftime('%Y-%m-%d') if server and server.purchase_date else '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày hết hạn</label>
+        <input type="date" name="expiry_date" class="form-control" value="{{ server.expiry_date.strftime('%Y-%m-%d') if server and server.expiry_date else '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chi phí/tháng (VNĐ)</label>
+        <input type="number" name="monthly_cost" class="form-control" value="{{ server.monthly_cost if server else '' }}" placeholder="500000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-control">
+          {% for s in statuses %}<option value="{{ s }}" {% if server and server.status.value==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="notes" class="form-control">{{ server.notes if server else '' }}</textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button type="submit" class="btn btn-primary">💾 Lưu server</button>
+      <a href="/servers" class="btn btn-secondary">Hủy</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

@@ -1,1 +1,45 @@
-Product detail
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block page_title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{{ product.name }}</h1><p>v{{ product.version or '—' }}</p></div>
+  <div class="page-header-actions">
+    <a href="/products" class="btn btn-secondary">← Danh sách</a>
+    <a href="/products/{{ product.id }}/edit" class="btn btn-secondary">Sửa</a>
+    <form method="post" action="/products/{{ product.id }}/delete" style="display:inline;">
+      <button type="submit" class="btn btn-danger" data-confirm="Xóa sản phẩm '{{ product.name }}'?">Xóa</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Thông tin sản phẩm</div></div>
+    <div class="card-body">
+      <div class="info-row"><span class="info-label">Phiên bản</span><span class="info-value"><span class="badge badge-gray">v{{ product.version or '—' }}</span></span></div>
+      <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge {% if product.status and product.status.value == 'active' %}badge-green{% elif product.status and product.status.value == 'archived' %}badge-gray{% else %}badge-yellow{% endif %}">{{ product.status.value if product.status else '—' }}</span></span></div>
+      {% if product.description %}<div class="info-row"><span class="info-label">Mô tả</span><span class="info-value" style="white-space:pre-wrap;">{{ product.description }}</span></div>{% endif %}
+      {% if product.notes %}<div class="info-row"><span class="info-label">Ghi chú</span><span class="info-value" style="white-space:pre-wrap;">{{ product.notes }}</span></div>{% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">🔗 Links</div></div>
+    <div class="card-body">
+      {% if product.demo_url %}
+      <a href="{{ product.demo_url }}" target="_blank" class="btn btn-secondary w-full" style="margin-bottom:10px;justify-content:center;">🌐 Xem Demo</a>
+      {% endif %}
+      {% if product.repo_url %}
+      <a href="{{ product.repo_url }}" target="_blank" class="btn btn-secondary w-full" style="margin-bottom:10px;justify-content:center;">📁 Mở Repository</a>
+      {% endif %}
+      {% if product.docs_url %}
+      <a href="{{ product.docs_url }}" target="_blank" class="btn btn-secondary w-full" style="justify-content:center;">📖 Tài liệu</a>
+      {% endif %}
+      {% if not product.demo_url and not product.repo_url and not product.docs_url %}
+      <p style="color:var(--text-muted);text-align:center;padding:20px 0;font-size:13px;">Chưa có links</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

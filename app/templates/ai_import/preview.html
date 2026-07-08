@@ -1,1 +1,175 @@
-AI Import preview
+{% extends "base.html" %}
+{% block title %}Preview AI Import{% endblock %}
+{% block page_title %}Preview kết quả AI{% endblock %}
+{% block page_subtitle %}Kiểm tra và chỉnh sửa trước khi import{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>🔍 Preview kết quả AI</h1><p>Xem lại, chỉnh sửa dữ liệu trước khi lưu vào hệ thống</p></div>
+  <div class="page-header-actions"><a href="/import" class="btn btn-secondary">← Quay lại</a></div>
+</div>
+
+{% if error %}
+<div class="flash flash-error" style="margin-bottom:20px;">⚠️ AI gặp lỗi: {{ error }}. Dữ liệu có thể không đầy đủ.</div>
+{% endif %}
+
+<!-- Source text collapsible -->
+{% if source_text %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header" style="cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+    <div class="card-title">📄 Text đã phân tích <span style="font-size:12px;color:var(--text-secondary);font-weight:400;">(click để xem/ẩn)</span></div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+  <div style="display:none;padding:16px 20px;border-top:1px solid var(--border);">
+    <pre style="font-size:12px;white-space:pre-wrap;color:var(--text-secondary);background:var(--bg-main);padding:12px;border-radius:var(--radius-sm);">{{ source_text[:2000] }}{% if source_text|length > 2000 %}
+... (truncated){% endif %}</pre>
+  </div>
+</div>
+{% endif %}
+
+<form method="post" action="/import/confirm" id="confirm-form">
+  <input type="hidden" name="customer_id" value="{{ ai_result.customer_id if ai_result else '' }}">
+  <input type="hidden" name="domains_json" id="domains-json">
+  <input type="hidden" name="servers_json" id="servers-json">
+
+  <!-- Domains table -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">🌐 Domains phát hiện được</div>
+        <div class="card-subtitle" id="domains-count">{{ ai_result.domains|length if ai_result and ai_result.domains else 0 }} domain</div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table id="domains-table">
+        <thead>
+          <tr>
+            <th>Tên domain</th>
+            <th>Nhà đăng ký</th>
+            <th>Ngày hết hạn</th>
+            <th>Auto renew</th>
+            <th>Ghi chú</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="domains-tbody">
+          {% if ai_result and ai_result.domains %}
+            {% for d in ai_result.domains %}
+            <tr>
+              <td><input type="text" class="form-control" style="min-width:160px;" value="{{ d.domain_name or '' }}" placeholder="example.com"></td>
+              <td><input type="text" class="form-control" style="min-width:120px;" value="{{ d.registrar or '' }}" placeholder="Nhà đăng ký"></td>
+              <td><input type="date" class="form-control" value="{{ d.expiry_date or '' }}"></td>
+              <td style="text-align:center;"><input type="checkbox" {% if d.auto_renew %}checked{% endif %} style="width:16px;height:16px;accent-color:var(--primary);"></td>
+              <td><input type="text" class="form-control" value="{{ d.notes or '' }}" placeholder="Ghi chú"></td>
+              <td><button type="button" onclick="this.closest('tr').remove()" class="btn btn-sm btn-danger">✕</button></td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr id="domains-empty"><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">AI không tìm thấy domain nào. <button type="button" onclick="addDomainRow()" class="btn btn-sm btn-primary" style="margin-left:8px;">+ Thêm thủ công</button></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);">
+      <button type="button" onclick="addDomainRow()" class="btn btn-sm btn-secondary">+ Thêm domain</button>
+    </div>
+  </div>
+
+  <!-- Servers table -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">🖥 Servers phát hiện được</div>
+        <div class="card-subtitle">{{ ai_result.servers|length if ai_result and ai_result.servers else 0 }} server</div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table id="servers-table">
+        <thead>
+          <tr><th>Nhãn</th><th>Provider</th><th>IP</th><th>Loại</th><th>Hết hạn</th><th>Chi phí/th (đ)</th><th>Ghi chú</th><th></th></tr>
+        </thead>
+        <tbody id="servers-tbody">
+          {% if ai_result and ai_result.servers %}
+            {% for s in ai_result.servers %}
+            <tr>
+              <td><input type="text" class="form-control" style="min-width:130px;" value="{{ s.label or '' }}" placeholder="Server label"></td>
+              <td><input type="text" class="form-control" style="min-width:100px;" value="{{ s.provider or '' }}" placeholder="Provider"></td>
+              <td><input type="text" class="form-control" style="min-width:110px;" value="{{ s.ip_address or '' }}" placeholder="IP"></td>
+              <td>
+                <select class="form-control" style="min-width:90px;">
+                  {% for t in ['VPS','Shared','Dedicated','Cloud'] %}
+                  <option {% if s.type==t %}selected{% endif %}>{{ t }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="date" class="form-control" value="{{ s.expiry_date or '' }}"></td>
+              <td><input type="number" class="form-control" style="min-width:100px;" value="{{ s.monthly_cost or '' }}" placeholder="500000"></td>
+              <td><input type="text" class="form-control" value="{{ s.notes or '' }}" placeholder="Ghi chú"></td>
+              <td><button type="button" onclick="this.closest('tr').remove()" class="btn btn-sm btn-danger">✕</button></td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr id="servers-empty"><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px;">AI không tìm thấy server nào. <button type="button" onclick="addServerRow()" class="btn btn-sm btn-primary" style="margin-left:8px;">+ Thêm thủ công</button></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);">
+      <button type="button" onclick="addServerRow()" class="btn btn-sm btn-secondary">+ Thêm server</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;">
+    <button type="submit" class="btn btn-primary" onclick="return serializeAndSubmit()">
+      ✅ Xác nhận import
+    </button>
+    <a href="/import" class="btn btn-secondary">↩ Làm lại</a>
+  </div>
+</form>
+
+<script>
+function addDomainRow() {
+  document.getElementById('domains-empty') && document.getElementById('domains-empty').remove();
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="text" class="form-control" style="min-width:160px;" placeholder="example.com"></td>
+    <td><input type="text" class="form-control" style="min-width:120px;" placeholder="Nhà đăng ký"></td>
+    <td><input type="date" class="form-control"></td>
+    <td style="text-align:center;"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--primary);"></td>
+    <td><input type="text" class="form-control" placeholder="Ghi chú"></td>
+    <td><button type="button" onclick="this.closest('tr').remove()" class="btn btn-sm btn-danger">✕</button></td>`;
+  document.getElementById('domains-tbody').appendChild(tr);
+}
+
+function addServerRow() {
+  document.getElementById('servers-empty') && document.getElementById('servers-empty').remove();
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="text" class="form-control" style="min-width:130px;" placeholder="Server label"></td>
+    <td><input type="text" class="form-control" style="min-width:100px;" placeholder="Provider"></td>
+    <td><input type="text" class="form-control" style="min-width:110px;" placeholder="IP"></td>
+    <td><select class="form-control" style="min-width:90px;"><option>VPS</option><option>Shared</option><option>Dedicated</option><option>Cloud</option></select></td>
+    <td><input type="date" class="form-control"></td>
+    <td><input type="number" class="form-control" style="min-width:100px;" placeholder="500000"></td>
+    <td><input type="text" class="form-control" placeholder="Ghi chú"></td>
+    <td><button type="button" onclick="this.closest('tr').remove()" class="btn btn-sm btn-danger">✕</button></td>`;
+  document.getElementById('servers-tbody').appendChild(tr);
+}
+
+function serializeAndSubmit() {
+  const domains = [];
+  document.querySelectorAll('#domains-tbody tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input, select');
+    if (inputs.length < 5) return;
+    domains.push({ domain_name: inputs[0].value, registrar: inputs[1].value, expiry_date: inputs[2].value, auto_renew: inputs[3].checked, notes: inputs[4].value });
+  });
+  const servers = [];
+  document.querySelectorAll('#servers-tbody tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input, select');
+    if (inputs.length < 6) return;
+    servers.push({ label: inputs[0].value, provider: inputs[1].value, ip_address: inputs[2].value, type: inputs[3].value, expiry_date: inputs[4].value, monthly_cost: inputs[5].value, notes: inputs[6] ? inputs[6].value : '' });
+  });
+  document.getElementById('domains-json').value = JSON.stringify(domains);
+  document.getElementById('servers-json').value = JSON.stringify(servers);
+  return true;
+}
+</script>
+{% endblock %}

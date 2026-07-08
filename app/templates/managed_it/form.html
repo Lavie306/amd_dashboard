@@ -1,1 +1,63 @@
-Managed IT form
+{% extends "base.html" %}
+{% block title %}{% if package %}Sửa gói IT{% else %}Thêm gói IT{% endif %}{% endblock %}
+{% block page_title %}{% if package %}Sửa gói{% else %}Thêm gói Managed IT{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{% if package %}Sửa: {{ package.name }}{% else %}Thêm gói Managed IT{% endif %}</h1></div>
+  <div class="page-header-actions"><a href="/managed-it" class="btn btn-secondary">← Quay lại</a></div>
+</div>
+<div class="card"><div class="card-body">
+  <form method="post" action="{% if package %}/managed-it/{{ package.id }}/update{% else %}/managed-it/{% endif %}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Khách hàng <span class="required">*</span></label>
+        <select name="customer_id" class="form-control" required>
+          <option value="">— Chọn khách hàng —</option>
+          {% for c in customers %}<option value="{{ c.id }}" {% if package and package.customer_id==c.id %}selected{% elif request.query_params.get('customer_id')|int==c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tên gói <span class="required">*</span></label>
+        <input type="text" name="name" class="form-control" value="{{ package.name if package else '' }}" placeholder="Gói IT cơ bản / Nâng cao..." required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Giá (VNĐ)</label>
+        <input type="number" name="price" class="form-control" value="{{ package.price if package else '' }}" placeholder="2000000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chu kỳ thanh toán</label>
+        <select name="billing_cycle" class="form-control">
+          {% for c in cycles %}<option value="{{ c }}" {% if package and package.billing_cycle==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày bắt đầu</label>
+        <input type="date" name="start_date" class="form-control" value="{{ package.start_date.strftime('%Y-%m-%d') if package and package.start_date else '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày hết hạn</label>
+        <input type="date" name="expiry_date" class="form-control" value="{{ package.expiry_date.strftime('%Y-%m-%d') if package and package.expiry_date else '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-control">
+          {% for s in statuses %}<option value="{{ s }}" {% if package and package.status.value==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label">Mô tả dịch vụ</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="Mô tả các dịch vụ bao gồm trong gói...">{{ package.description if package else '' }}</textarea>
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="notes" class="form-control">{{ package.notes if package else '' }}</textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button type="submit" class="btn btn-primary">💾 Lưu gói</button>
+      <a href="/managed-it" class="btn btn-secondary">Hủy</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

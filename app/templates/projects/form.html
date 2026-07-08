@@ -1,1 +1,105 @@
-Project form
+{% extends "base.html" %}
+{% block title %}{% if project %}Sửa Dự án{% else %}Thêm Dự án{% endif %}{% endblock %}
+{% block page_title %}{% if project %}Sửa dự án{% else %}Thêm dự án mới{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{% if project %}Sửa: {{ project.name }}{% else %}Thêm dự án mới{% endif %}</h1>
+  </div>
+  <div class="page-header-actions">
+    <a href="/projects" class="btn btn-secondary">← Quay lại</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" action="{% if project %}/projects/{{ project.id }}/update{% else %}/projects/{% endif %}">
+      <div class="form-grid">
+        <div class="form-group col-span-2">
+          <label class="form-label">Tên dự án <span class="required">*</span></label>
+          <input type="text" name="name" class="form-control" value="{{ project.name if project else '' }}" placeholder="Website bán hàng ABC Corp" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Khách hàng <span class="required">*</span></label>
+          <select name="customer_id" class="form-control" required>
+            <option value="">— Chọn khách hàng —</option>
+            {% for c in customers %}<option value="{{ c.id }}" {% if project and project.customer_id==c.id %}selected{% elif request.query_params.get('customer_id')|int == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Trạng thái</label>
+          <select name="status" class="form-control">
+            {% for s in statuses %}<option value="{{ s }}" {% if project and project.status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ngày bắt đầu</label>
+          <input type="date" name="start_date" class="form-control" value="{{ project.start_date.strftime('%Y-%m-%d') if project and project.start_date else '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ngày bàn giao</label>
+          <input type="date" name="end_date" class="form-control" value="{{ project.end_date.strftime('%Y-%m-%d') if project and project.end_date else '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tech Stack</label>
+          <input type="text" name="tech_stack" class="form-control" value="{{ project.tech_stack if project else '' }}" placeholder="FastAPI, React, PostgreSQL">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Giá trị hợp đồng (VNĐ)</label>
+          <input type="number" name="contract_value" class="form-control" value="{{ project.contract_value if project else '' }}" placeholder="50000000">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Repo URL</label>
+          <input type="url" name="repo_url" class="form-control" value="{{ project.repo_url if project else '' }}" placeholder="https://github.com/...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Staging URL</label>
+          <input type="url" name="staging_url" class="form-control" value="{{ project.staging_url if project else '' }}" placeholder="https://staging.example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Production URL</label>
+          <input type="url" name="production_url" class="form-control" value="{{ project.production_url if project else '' }}" placeholder="https://example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Loại hợp đồng</label>
+          <select name="contract_type" class="form-control">
+            <option value="">— Chọn loại —</option>
+            {% for ct in contract_types %}<option value="{{ ct }}" {% if project and project.contract_type==ct %}selected{% endif %}>{{ ct }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group col-span-2">
+          <label class="form-label">Mô tả dự án</label>
+          <textarea name="description" class="form-control" rows="3" placeholder="Mô tả ngắn về dự án...">{{ project.description if project else '' }}</textarea>
+        </div>
+
+        <div class="form-group col-span-2">
+          <label class="form-label">Ghi chú kỹ thuật</label>
+          <textarea name="technical_notes" class="form-control" rows="3" placeholder="Cấu hình server, API keys, lưu ý kỹ thuật...">{{ project.technical_notes if project else '' }}</textarea>
+        </div>
+
+        <div class="form-group col-span-2">
+          <label class="form-label">Ghi chú hợp đồng</label>
+          <textarea name="contract_notes" class="form-control" rows="2" placeholder="Điều khoản, bảo hành, hỗ trợ...">{{ project.contract_notes if project else '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary">💾 Lưu dự án</button>
+        <a href="/projects" class="btn btn-secondary">Hủy</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

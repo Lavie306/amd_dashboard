@@ -1,1 +1,168 @@
-Project detail
+{% extends "base.html" %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block page_title %}{{ project.name }}{% endblock %}
+{% block page_subtitle %}{{ project.customer.name if project.customer else '' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{{ project.name }}</h1>
+    <p>Khách hàng: <a href="/customers/{{ project.customer_id }}" style="color:var(--primary);">{{ project.customer.name if project.customer else '—' }}</a></p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/projects" class="btn btn-secondary">← Danh sách</a>
+    <a href="/projects/{{ project.id }}/edit" class="btn btn-secondary">Sửa</a>
+    <form method="post" action="/projects/{{ project.id }}/delete" style="display:inline;">
+      <button type="submit" class="btn btn-danger" data-confirm="Xóa dự án '{{ project.name }}'?">Xóa</button>
+    </form>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="project-tabs">
+  <a class="tab active" href="#" onclick="showTab('info',this)">📋 Thông tin</a>
+  <a class="tab" href="#" onclick="showTab('contract',this)">📄 Hợp đồng</a>
+  <a class="tab" href="#" onclick="showTab('payment',this)">💰 Thanh toán</a>
+</div>
+
+<!-- Tab: Thông tin -->
+<div id="tab-info">
+  <div class="detail-grid">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Thông tin dự án</div></div>
+      <div class="card-body">
+        <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge badge-blue">{{ project.status or 'N/A' }}</span></span></div>
+        <div class="info-row"><span class="info-label">Tech Stack</span><span class="info-value">{{ project.tech_stack or '—' }}</span></div>
+        <div class="info-row"><span class="info-label">Ngày bắt đầu</span><span class="info-value">{{ project.start_date.strftime('%d/%m/%Y') if project.start_date else '—' }}</span></div>
+        <div class="info-row"><span class="info-label">Ngày bàn giao</span><span class="info-value">{{ project.end_date.strftime('%d/%m/%Y') if project.end_date else '—' }}</span></div>
+        <div class="info-row"><span class="info-label">Giá trị HĐ</span><span class="info-value" style="font-weight:700;color:var(--primary);">{% if project.contract_value %}{{ "{:,.0f}".format(project.contract_value) }}đ{% else %}—{% endif %}</span></div>
+        {% if project.description %}<div class="info-row"><span class="info-label">Mô tả</span><span class="info-value">{{ project.description }}</span></div>{% endif %}
+        {% if project.technical_notes %}<div class="info-row"><span class="info-label">Ghi chú KT</span><span class="info-value" style="white-space:pre-wrap;font-size:12.5px;">{{ project.technical_notes }}</span></div>{% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Links dự án</div></div>
+      <div class="card-body">
+        {% if project.repo_url %}<div class="info-row"><span class="info-label">Repo</span><span class="info-value"><a href="{{ project.repo_url }}" target="_blank" style="color:var(--primary);">🔗 GitHub</a></span></div>{% endif %}
+        {% if project.staging_url %}<div class="info-row"><span class="info-label">Staging</span><span class="info-value"><a href="{{ project.staging_url }}" target="_blank" style="color:var(--primary);">🔗 {{ project.staging_url }}</a></span></div>{% endif %}
+        {% if project.production_url %}<div class="info-row"><span class="info-label">Production</span><span class="info-value"><a href="{{ project.production_url }}" target="_blank" style="color:var(--accent);">🌐 {{ project.production_url }}</a></span></div>{% endif %}
+        {% if not project.repo_url and not project.staging_url and not project.production_url %}
+        <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0;">Chưa có links</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Hợp đồng -->
+<div id="tab-contract" style="display:none;">
+  <div class="card">
+    <div class="card-header"><div class="card-title">📄 Hợp đồng</div></div>
+    <div class="card-body">
+      <div class="info-row"><span class="info-label">Loại HĐ</span><span class="info-value">{{ project.contract_type or '—' }}</span></div>
+      {% if project.contract_notes %}<div class="info-row"><span class="info-label">Ghi chú HĐ</span><span class="info-value" style="white-space:pre-wrap;">{{ project.contract_notes }}</span></div>{% endif %}
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:12px;">File hợp đồng</h4>
+        {% if project.contract_file %}
+          <a href="/uploads/{{ project.contract_file }}" target="_blank" class="btn btn-secondary">
+            📎 Tải file hợp đồng
+          </a>
+        {% else %}
+          <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Chưa có file hợp đồng.</p>
+        {% endif %}
+        <form method="post" action="/projects/{{ project.id }}/contract" enctype="multipart/form-data" style="margin-top:14px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="file" name="contract_file" class="form-control" style="max-width:320px;" accept=".pdf,.doc,.docx">
+            <button type="submit" class="btn btn-primary">Upload HĐ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Thanh toán -->
+<div id="tab-payment" style="display:none;">
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><div class="card-title">💰 Các đợt thanh toán</div></div>
+    <div class="card-body">
+      <!-- Summary -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+        <div style="text-align:center;">
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Giá trị HĐ</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text-primary);">{{ "{:,.0f}".format(project.contract_value or 0) }}đ</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Đã nhận</div>
+          <div style="font-size:20px;font-weight:800;color:var(--accent);">{{ "{:,.0f}".format(total_received or 0) }}đ</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Còn lại</div>
+          <div style="font-size:20px;font-weight:800;color:{% if (remaining or 0) > 0 %}var(--danger){% else %}var(--accent){% endif %};">{{ "{:,.0f}".format(remaining or 0) }}đ</div>
+        </div>
+      </div>
+
+      <!-- Payment stages table -->
+      {% if project.payment_stages %}
+      <table style="margin-bottom:20px;">
+        <thead><tr><th>Đợt thanh toán</th><th>Số tiền</th><th>Ngày nhận</th><th>Ghi chú</th><th></th></tr></thead>
+        <tbody>
+          {% for ps in project.payment_stages %}
+          <tr>
+            <td style="font-weight:600;">{{ ps.name }}</td>
+            <td style="font-weight:700;color:var(--accent);">{{ "{:,.0f}".format(ps.amount or 0) }}đ</td>
+            <td>{{ ps.received_date.strftime('%d/%m/%Y') if ps.received_date else '—' }}</td>
+            <td style="color:var(--text-secondary);font-size:13px;">{{ ps.notes or '—' }}</td>
+            <td>
+              <form method="post" action="/projects/{{ project.id }}/payment/{{ ps.id }}/delete" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Xóa đợt thanh toán này?">Xóa</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Chưa có đợt thanh toán nào.</p>
+      {% endif %}
+
+      <!-- Add payment stage -->
+      <div style="background:var(--bg-main);border-radius:var(--radius-md);padding:16px;">
+        <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text-secondary);">+ Thêm đợt thanh toán</h4>
+        <form method="post" action="/projects/{{ project.id }}/payment">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:12px;">Tên đợt</label>
+              <input type="text" name="name" class="form-control" placeholder="Đợt 1 — Ký hợp đồng" required>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:12px;">Số tiền (đ)</label>
+              <input type="number" name="amount" class="form-control" placeholder="10000000" required>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:12px;">Ngày nhận</label>
+              <input type="date" name="received_date" class="form-control">
+            </div>
+          </div>
+          <div class="form-group" style="margin:8px 0 0;">
+            <input type="text" name="notes" class="form-control" placeholder="Ghi chú (tuỳ chọn)">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-top:8px;">Thêm đợt</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(name, el) {
+  ['info','contract','payment'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  el.blur();
+  return false;
+}
+</script>
+{% endblock %}

@@ -1,1 +1,126 @@
-AI Import
+{% extends "base.html" %}
+{% block title %}AI Import{% endblock %}
+{% block page_title %}AI Import{% endblock %}
+{% block page_subtitle %}Nhập dữ liệu thông minh bằng Gemini AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>🤖 AI Import</h1><p>Upload file hoặc paste text — AI sẽ tự động trích xuất dữ liệu domain/server</p></div>
+</div>
+
+{% if error %}
+<div class="flash flash-error" style="margin-bottom:20px;">⚠️ {{ error }}</div>
+{% endif %}
+
+<div class="detail-grid">
+  <!-- Hướng dẫn -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Chọn khách hàng</div></div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Tất cả dữ liệu import sẽ gán cho khách hàng này.</p>
+        <select id="global-customer" class="form-control" required>
+          <option value="">— Chọn khách hàng —</option>
+          {% for c in customers %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">💡 Hướng dẫn sử dụng</div></div>
+      <div class="card-body">
+        <p style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text-primary);">AI có thể đọc được:</p>
+        <ul style="font-size:12.5px;color:var(--text-secondary);line-height:1.8;padding-left:16px;">
+          <li>File Word/Excel từ nhà đăng ký domain</li>
+          <li>File ảnh hoá đơn hosting (JPG, PNG)</li>
+          <li>Email xác nhận dạng text</li>
+          <li>Danh sách domain/server dạng bảng</li>
+        </ul>
+        <div style="margin-top:14px;padding:12px;background:var(--bg-main);border-radius:var(--radius-sm);">
+          <p style="font-size:12px;font-weight:700;margin-bottom:4px;color:var(--text-secondary);">Ví dụ text input:</p>
+          <code style="font-size:11.5px;color:var(--text-secondary);line-height:1.7;display:block;white-space:pre-wrap;">Domain: example.com.vn
+Hết hạn: 15/08/2026
+Nhà đăng ký: Pavietnam
+Server: VPS-01, IP: 103.1.2.3
+Provider: Vultr, Hết hạn: 01/12/2026</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload/Paste tabs -->
+  <div class="card">
+    <div class="card-body" style="padding-bottom:0;">
+      <!-- Tab nav -->
+      <div class="tabs" style="margin-bottom:20px;">
+        <a class="tab active" href="#" onclick="switchImportTab('upload',this)">📎 Upload file</a>
+        <a class="tab" href="#" onclick="switchImportTab('text',this)">📝 Paste text</a>
+      </div>
+
+      <!-- Upload tab -->
+      <div id="import-tab-upload">
+        <form method="post" action="/import/upload" enctype="multipart/form-data" onsubmit="return injectCustomer(this)">
+          <input type="hidden" name="customer_id" id="upload-customer-id">
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+            <div class="upload-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>
+            </div>
+            <div class="upload-text">Kéo thả file vào đây hoặc <span style="color:var(--primary);font-weight:700;">click để chọn</span></div>
+            <div class="upload-hint">Hỗ trợ: .txt, .docx, .xlsx, .jpg, .png, .jpeg (tối đa 10MB)</div>
+            <input type="file" id="file-input" name="file" accept=".txt,.docx,.xlsx,.jpg,.png,.jpeg" style="display:none;" onchange="showFileName(this)">
+          </div>
+          <div id="file-name-display" style="display:none;margin:10px 0;padding:10px 14px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:13px;color:var(--primary);font-weight:600;"></div>
+          <button type="submit" class="btn btn-primary w-full" style="margin-top:16px;">🤖 Phân tích bằng AI</button>
+        </form>
+      </div>
+
+      <!-- Text tab -->
+      <div id="import-tab-text" style="display:none;">
+        <form method="post" action="/import/text" onsubmit="return injectCustomer(this)">
+          <input type="hidden" name="customer_id" id="text-customer-id">
+          <div class="form-group">
+            <label class="form-label">Paste nội dung cần phân tích</label>
+            <textarea name="text_input" class="form-control" rows="12" placeholder="Paste danh sách domain, email xác nhận hosting, hoặc bất kỳ text nào chứa thông tin domain/server..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-full">🤖 Phân tích bằng AI</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchImportTab(name, el) {
+  ['upload','text'].forEach(t => document.getElementById('import-tab-'+t).style.display = t===name?'block':'none');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  return false;
+}
+
+function injectCustomer(form) {
+  const cid = document.getElementById('global-customer').value;
+  if (!cid) { alert('Vui lòng chọn khách hàng trước!'); return false; }
+  form.querySelector('[name="customer_id"]').value = cid;
+  return true;
+}
+
+function showFileName(input) {
+  const display = document.getElementById('file-name-display');
+  if (input.files.length) {
+    display.style.display = 'block';
+    display.textContent = '📎 ' + input.files[0].name;
+    document.getElementById('upload-zone').style.borderColor = 'var(--primary)';
+  }
+}
+
+// Drag-drop
+const zone = document.getElementById('upload-zone');
+['dragover','dragenter'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.style.background='var(--primary-light)'; }));
+['dragleave','drop'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.style.background=''; }));
+zone.addEventListener('drop', ev => {
+  const files = ev.dataTransfer.files;
+  document.getElementById('file-input').files = files;
+  showFileName(document.getElementById('file-input'));
+});
+</script>
+{% endblock %}

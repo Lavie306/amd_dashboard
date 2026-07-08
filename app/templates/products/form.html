@@ -1,1 +1,54 @@
-Product form
+{% extends "base.html" %}
+{% block title %}{% if product %}Sửa sản phẩm{% else %}Thêm sản phẩm{% endif %}{% endblock %}
+{% block page_title %}{% if product %}Sửa sản phẩm{% else %}Thêm sản phẩm mới{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{% if product %}Sửa: {{ product.name }}{% else %}Thêm sản phẩm mới{% endif %}</h1></div>
+  <div class="page-header-actions"><a href="/products" class="btn btn-secondary">← Quay lại</a></div>
+</div>
+<div class="card"><div class="card-body">
+  <form method="post" action="{% if product %}/products/{{ product.id }}/update{% else %}/products/{% endif %}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Tên sản phẩm <span class="required">*</span></label>
+        <input type="text" name="name" class="form-control" value="{{ product.name if product else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phiên bản</label>
+        <input type="text" name="version" class="form-control" value="{{ product.version if product else '' }}" placeholder="1.0.0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-control">
+          {% for s in statuses %}<option value="{{ s }}" {% if product and product.status.value==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Demo URL</label>
+        <input type="url" name="demo_url" class="form-control" value="{{ product.demo_url if product else '' }}" placeholder="https://demo.example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Repo URL</label>
+        <input type="url" name="repo_url" class="form-control" value="{{ product.repo_url if product else '' }}" placeholder="https://github.com/...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Docs URL</label>
+        <input type="url" name="docs_url" class="form-control" value="{{ product.docs_url if product else '' }}" placeholder="https://docs.example.com">
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label">Mô tả</label>
+        <textarea name="description" class="form-control" rows="3">{{ product.description if product else '' }}</textarea>
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="notes" class="form-control">{{ product.notes if product else '' }}</textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button type="submit" class="btn btn-primary">💾 Lưu sản phẩm</button>
+      <a href="/products" class="btn btn-secondary">Hủy</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

@@ -1,1 +1,34 @@
-AI Import success
+{% extends "base.html" %}
+{% block title %}Import thành công{% endblock %}
+{% block page_title %}Import thành công!{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:600px;margin:40px auto;text-align:center;">
+  <div class="card-body" style="padding:60px 40px;">
+    <div style="width:80px;height:80px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#059669"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+    </div>
+
+    <h2 style="font-size:26px;font-weight:800;color:var(--text-primary);margin-bottom:8px;">Import thành công! 🎉</h2>
+    <p style="color:var(--text-secondary);margin-bottom:32px;">Dữ liệu đã được lưu vào hệ thống</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+      <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:20px;">
+        <div style="font-size:36px;font-weight:900;color:var(--primary);">{{ imported_domains }}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--primary);">🌐 Domain đã import</div>
+      </div>
+      <div style="background:var(--accent-light);border-radius:var(--radius-md);padding:20px;">
+        <div style="font-size:36px;font-weight:900;color:#059669;">{{ imported_servers }}</div>
+        <div style="font-size:13px;font-weight:600;color:#059669;">🖥 Server đã import</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="/domains" class="btn btn-primary">Xem Domains</a>
+      <a href="/servers" class="btn btn-secondary">Xem Servers</a>
+      <a href="/import" class="btn btn-secondary">Import thêm</a>
+      <a href="/" class="btn btn-secondary">Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

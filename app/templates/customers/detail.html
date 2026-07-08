@@ -1,1 +1,131 @@
-Customer detail
+{% extends "base.html" %}
+{% block title %}{{ customer.name }}{% endblock %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+{% block page_subtitle %}Chi tiết khách hàng{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{{ customer.name }}</h1>
+    <p>{% if customer.customer_type and customer.customer_type.value == 'business' %}🏢 Doanh nghiệp{% else %}👤 Cá nhân{% endif %}{% if customer.company_name %} — {{ customer.company_name }}{% endif %}</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/customers" class="btn btn-secondary">← Danh sách</a>
+    <a href="/customers/{{ customer.id }}/edit" class="btn btn-secondary">Sửa</a>
+    <form method="post" action="/customers/{{ customer.id }}/delete" style="display:inline;">
+      <button type="submit" class="btn btn-danger" data-confirm="Xóa khách hàng '{{ customer.name }}'? Tất cả dữ liệu liên quan sẽ bị xóa.">Xóa</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- Col 1: Info -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Thông tin khách hàng</div></div>
+      <div class="card-body">
+        <div class="info-row"><span class="info-label">Loại</span><span class="info-value">{% if customer.customer_type and customer.customer_type.value == 'business' %}<span class="badge badge-blue">🏢 Doanh nghiệp</span>{% else %}<span class="badge badge-gray">👤 Cá nhân</span>{% endif %}</span></div>
+        <div class="info-row"><span class="info-label">Tên công ty</span><span class="info-value">{{ customer.company_name or '—' }}</span></div>
+        <div class="info-row"><span class="info-label">Mã số thuế</span><span class="info-value">{{ customer.tax_code or '—' }}</span></div>
+        <div class="info-row"><span class="info-label">Email</span><span class="info-value">{% if customer.email %}<a href="mailto:{{ customer.email }}" style="color:var(--primary);">{{ customer.email }}</a>{% else %}—{% endif %}</span></div>
+        <div class="info-row"><span class="info-label">Số điện thoại</span><span class="info-value">{% if customer.phone %}<a href="tel:{{ customer.phone }}" style="color:var(--primary);">{{ customer.phone }}</a>{% else %}—{% endif %}</span></div>
+        <div class="info-row"><span class="info-label">Địa chỉ</span><span class="info-value">{{ customer.address or '—' }}</span></div>
+        <div class="info-row"><span class="info-label">Ngày tạo</span><span class="info-value">{{ customer.created_at.strftime('%d/%m/%Y') if customer.created_at else '—' }}</span></div>
+        {% if customer.notes %}
+        <div class="info-row"><span class="info-label">Ghi chú</span><span class="info-value" style="white-space:pre-wrap;">{{ customer.notes }}</span></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Domains -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🌐 Domain ({{ customer.domains|length }})</div>
+        <a href="/domains/new?customer_id={{ customer.id }}" class="btn btn-sm btn-primary">+ Thêm</a>
+      </div>
+      <div class="card-body" style="padding-top:12px;">
+        {% if customer.domains %}
+          {% for d in customer.domains %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <a href="/domains/{{ d.id }}" style="font-weight:600;color:var(--text-primary);text-decoration:none;">{{ d.domain_name }}</a>
+              {% if d.expiry_date %}<div style="font-size:12px;color:var(--text-secondary);">HH: {{ d.expiry_date.strftime('%d/%m/%Y') }}</div>{% endif %}
+            </div>
+            <span class="badge {% if d.status.value == 'active' %}badge-green{% else %}badge-gray{% endif %}">{{ d.status.value }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0;">Chưa có domain</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Col 2: Projects & Invoices -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <!-- Projects -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📁 Dự án ({{ customer.projects|length }})</div>
+        <a href="/projects/new?customer_id={{ customer.id }}" class="btn btn-sm btn-primary">+ Thêm</a>
+      </div>
+      <div class="card-body" style="padding-top:12px;">
+        {% if customer.projects %}
+          {% for p in customer.projects %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <a href="/projects/{{ p.id }}" style="font-weight:600;color:var(--text-primary);text-decoration:none;">{{ p.name }}</a>
+              {% if p.tech_stack %}<div style="font-size:12px;color:var(--text-secondary);">{{ p.tech_stack }}</div>{% endif %}
+            </div>
+            <span class="badge badge-blue">{{ p.status or 'N/A' }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0;">Chưa có dự án</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Invoices -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🧾 Hóa đơn ({{ customer.invoices|length }})</div>
+        <a href="/invoices/new?customer_id={{ customer.id }}" class="btn btn-sm btn-primary">+ Thêm</a>
+      </div>
+      <div class="card-body" style="padding-top:12px;">
+        {% if customer.invoices %}
+          {% for inv in customer.invoices %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <a href="/invoices/{{ inv.id }}" style="font-weight:600;color:var(--text-primary);text-decoration:none;">{{ inv.invoice_number or 'HĐ #'+inv.id|string }}</a>
+              {% if inv.issue_date %}<div style="font-size:12px;color:var(--text-secondary);">{{ inv.issue_date.strftime('%d/%m/%Y') }}</div>{% endif %}
+            </div>
+            <span style="font-weight:700;color:var(--primary);">{{ "{:,.0f}".format(inv.total_amount or 0) }}đ</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0;">Chưa có hóa đơn</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Managed IT -->
+    {% if customer.managed_it_packages %}
+    <div class="card">
+      <div class="card-header"><div class="card-title">🛡 Managed IT ({{ customer.managed_it_packages|length }})</div></div>
+      <div class="card-body" style="padding-top:12px;">
+        {% for m in customer.managed_it_packages %}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <a href="/managed-it/{{ m.id }}" style="font-weight:600;color:var(--text-primary);text-decoration:none;">{{ m.name }}</a>
+            {% if m.expiry_date %}<div style="font-size:12px;color:var(--text-secondary);">HH: {{ m.expiry_date.strftime('%d/%m/%Y') }}</div>{% endif %}
+          </div>
+          <span class="badge {% if m.status.value == 'active' %}badge-green{% else %}badge-gray{% endif %}">{{ m.status.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

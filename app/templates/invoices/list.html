@@ -1,1 +1,72 @@
-Invoices list
+{% extends "base.html" %}
+{% block title %}Hóa đơn VAT{% endblock %}
+{% block page_title %}Quản lý Hóa đơn VAT{% endblock %}
+{% block page_subtitle %}{{ invoices|length }} hóa đơn{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>Danh sách Hóa đơn</h1><p>Theo dõi hóa đơn VAT và file PDF</p></div>
+  <div class="page-header-actions"><a href="/invoices/new" class="btn btn-primary">+ Thêm hóa đơn</a></div>
+</div>
+
+<div class="filter-bar">
+  <form method="get" action="/invoices" style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap;">
+    <div class="filter-search" style="flex:1;min-width:200px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" name="q" value="{{ q or '' }}" placeholder="Tìm số hóa đơn...">
+    </div>
+    <select name="customer_id" class="filter-select" onchange="this.form.submit()">
+      <option value="">Tất cả khách hàng</option>
+      {% for c in customers %}<option value="{{ c.id }}" {% if customer_id|string==c.id|string %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Tìm</button>
+    {% if q or customer_id %}<a href="/invoices" class="btn btn-secondary">Xóa lọc</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    {% if invoices %}
+    <table>
+      <thead><tr><th>Số HĐ</th><th>Khách hàng</th><th>Dự án</th><th>Ngày xuất</th><th>Số tiền</th><th>VAT</th><th>Tổng</th><th>File PDF</th><th style="text-align:right;">Thao tác</th></tr></thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td style="font-weight:700;">{{ inv.invoice_number or 'HĐ-'+inv.id|string }}</td>
+          <td><a href="/customers/{{ inv.customer_id }}" style="color:var(--primary);text-decoration:none;font-weight:600;">{{ inv.customer.name if inv.customer else '—' }}</a></td>
+          <td style="color:var(--text-secondary);font-size:13px;">{{ inv.project.name if inv.project else '—' }}</td>
+          <td style="color:var(--text-secondary);">{{ inv.issue_date.strftime('%d/%m/%Y') if inv.issue_date else '—' }}</td>
+          <td>{{ "{:,.0f}".format(inv.amount or 0) }}đ</td>
+          <td><span class="badge badge-yellow">{{ inv.vat_percent or 10 }}%</span></td>
+          <td style="font-weight:700;color:var(--primary);">{{ "{:,.0f}".format(inv.total_amount or 0) }}đ</td>
+          <td>
+            {% if inv.file_path %}
+              <a href="/uploads/{{ inv.file_path }}" target="_blank" class="badge badge-green" style="text-decoration:none;">📎 PDF</a>
+            {% else %}
+              <span class="badge badge-red">Chưa có</span>
+            {% endif %}
+          </td>
+          <td style="text-align:right;">
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <a href="/invoices/{{ inv.id }}" class="btn btn-sm btn-secondary">Xem</a>
+              <a href="/invoices/{{ inv.id }}/edit" class="btn btn-sm btn-secondary">Sửa</a>
+              <form method="post" action="/invoices/{{ inv.id }}/delete" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Xóa hóa đơn này?">Xóa</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <h3>Chưa có hóa đơn nào</h3>
+      <p>Thêm hóa đơn đầu tiên để bắt đầu theo dõi</p>
+      <a href="/invoices/new" class="btn btn-primary">Thêm hóa đơn</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

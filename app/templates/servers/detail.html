@@ -1,1 +1,85 @@
-Server detail
+{% extends "base.html" %}
+{% block title %}{{ server.label }}{% endblock %}
+{% block page_title %}{{ server.label }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{{ server.label }}</h1><p>{{ server.provider or '' }} {% if server.ip_address %}— <code style="background:var(--bg-main);padding:2px 8px;border-radius:4px;font-size:13px;">{{ server.ip_address }}</code>{% endif %}</p></div>
+  <div class="page-header-actions">
+    <a href="/servers" class="btn btn-secondary">← Danh sách</a>
+    <a href="/servers/{{ server.id }}/edit" class="btn btn-secondary">Sửa</a>
+    <form method="post" action="/servers/{{ server.id }}/delete" style="display:inline;">
+      <button type="submit" class="btn btn-danger" data-confirm="Xóa server '{{ server.label }}'?">Xóa</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- Col 1: Info -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">🖥 Thông tin Server</div></div>
+    <div class="card-body">
+      <div class="info-row"><span class="info-label">Khách hàng</span><span class="info-value"><a href="/customers/{{ server.customer_id }}" style="color:var(--primary);font-weight:600;">{{ server.customer.name if server.customer else '—' }}</a></span></div>
+      {% if server.project %}<div class="info-row"><span class="info-label">Dự án</span><span class="info-value"><a href="/projects/{{ server.project_id }}" style="color:var(--primary);">{{ server.project.name }}</a></span></div>{% endif %}
+      <div class="info-row"><span class="info-label">Loại</span><span class="info-value"><span class="badge badge-purple">{{ server.type.value if server.type else '—' }}</span></span></div>
+      <div class="info-row"><span class="info-label">Provider</span><span class="info-value">{{ server.provider or '—' }}</span></div>
+      <div class="info-row"><span class="info-label">IP Address</span><span class="info-value"><code style="background:var(--bg-main);padding:3px 8px;border-radius:4px;font-size:13px;">{{ server.ip_address or '—' }}</code></span></div>
+      <div class="info-row"><span class="info-label">Hệ điều hành</span><span class="info-value">{{ server.os or '—' }}</span></div>
+      <div class="info-row"><span class="info-label">Ngày mua</span><span class="info-value">{{ server.purchase_date.strftime('%d/%m/%Y') if server.purchase_date else '—' }}</span></div>
+      <div class="info-row"><span class="info-label">Hết hạn</span><span class="info-value">{{ server.expiry_date.strftime('%d/%m/%Y') if server.expiry_date else '—' }}</span></div>
+      <div class="info-row"><span class="info-label">Chi phí/tháng</span><span class="info-value" style="font-weight:700;color:var(--primary);">{% if server.monthly_cost %}{{ "{:,.0f}".format(server.monthly_cost) }}đ{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge {% if server.status.value == 'active' %}badge-green{% elif server.status.value == 'expired' %}badge-red{% else %}badge-gray{% endif %}">{{ server.status.value }}</span></span></div>
+      {% if server.notes %}<div class="info-row"><span class="info-label">Ghi chú</span><span class="info-value" style="white-space:pre-wrap;">{{ server.notes }}</span></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Col 2: Vault -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">🔐 Vault Credentials</div>
+        <div class="card-subtitle">SSH, Panel, Database access</div>
+      </div>
+    </div>
+    <div class="card-body">
+      {% if server.credentials %}
+        {% for cred in server.credentials %}
+        <div class="vault-row">
+          <div class="vault-key">{{ cred.key_name }}</div>
+          <div class="vault-value-wrap">
+            <div class="vault-value" id="vault-val-{{ cred.id }}" data-revealed="false">••••••••</div>
+            <div class="vault-actions">
+              <button type="button" class="btn btn-sm btn-secondary btn-icon vault-reveal-btn" title="Xem" data-server="{{ server.id }}" data-cred="{{ cred.id }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary btn-icon vault-copy-btn" title="Copy" data-server="{{ server.id }}" data-cred="{{ cred.id }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+              <form method="post" action="/servers/{{ server.id }}/vault/{{ cred.id }}/delete" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger btn-icon" data-confirm="Xóa credential '{{ cred.key_name }}'?">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="m19 6-.867 12.142A2 2 0 0 1 16.138 20H7.862a2 2 0 0 1-1.995-1.858L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px 0;">Chưa có credentials nào</p>
+      {% endif %}
+
+      <!-- Add credential form -->
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+        <p style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;">+ Thêm credential</p>
+        <form method="post" action="/servers/{{ server.id }}/vault">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <input type="text" name="key_name" class="form-control" placeholder="Tên (ví dụ: SSH Password, cPanel Login)" required>
+            <input type="text" name="value" class="form-control" placeholder="Giá trị / mật khẩu" required>
+            <button type="submit" class="btn btn-primary btn-sm">Thêm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

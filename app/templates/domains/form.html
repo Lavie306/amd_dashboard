@@ -1,1 +1,66 @@
-Domain form
+{% extends "base.html" %}
+{% block title %}{% if domain %}Sửa Domain{% else %}Thêm Domain{% endif %}{% endblock %}
+{% block page_title %}{% if domain %}Sửa domain{% else %}Thêm domain mới{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{% if domain %}Sửa: {{ domain.domain_name }}{% else %}Thêm domain mới{% endif %}</h1></div>
+  <div class="page-header-actions"><a href="/domains" class="btn btn-secondary">← Quay lại</a></div>
+</div>
+<div class="card"><div class="card-body">
+  <form method="post" action="{% if domain %}/domains/{{ domain.id }}/update{% else %}/domains/{% endif %}">
+    <div class="form-grid">
+      <div class="form-group col-span-2">
+        <label class="form-label">Tên domain <span class="required">*</span></label>
+        <input type="text" name="domain_name" class="form-control" value="{{ domain.domain_name if domain else '' }}" placeholder="example.com.vn" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Khách hàng <span class="required">*</span></label>
+        <select name="customer_id" class="form-control" required>
+          <option value="">— Chọn khách hàng —</option>
+          {% for c in customers %}<option value="{{ c.id }}" {% if domain and domain.customer_id==c.id %}selected{% elif request.query_params.get('customer_id')|int==c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dự án liên quan</label>
+        <select name="project_id" class="form-control">
+          <option value="">— Không liên kết —</option>
+          {% for p in projects %}<option value="{{ p.id }}" {% if domain and domain.project_id==p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhà đăng ký</label>
+        <input type="text" name="registrar" class="form-control" value="{{ domain.registrar if domain else '' }}" placeholder="GoDaddy, VNPT, Pavietnam...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-control">
+          {% for s in statuses %}<option value="{{ s }}" {% if domain and domain.status.value==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày đăng ký</label>
+        <input type="date" name="registration_date" class="form-control" value="{{ domain.registration_date.strftime('%Y-%m-%d') if domain and domain.registration_date else '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày hết hạn</label>
+        <input type="date" name="expiry_date" class="form-control" value="{{ domain.expiry_date.strftime('%Y-%m-%d') if domain and domain.expiry_date else '' }}">
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" name="auto_renew" value="true" {% if domain and domain.auto_renew %}checked{% endif %} style="width:16px;height:16px;accent-color:var(--primary);">
+          Tự động gia hạn (Auto renew)
+        </label>
+      </div>
+      <div class="form-group col-span-2">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="notes" class="form-control">{{ domain.notes if domain else '' }}</textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button type="submit" class="btn btn-primary">💾 Lưu domain</button>
+      <a href="/domains" class="btn btn-secondary">Hủy</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

@@ -1,1 +1,30 @@
-Managed IT detail
+{% extends "base.html" %}
+{% block title %}{{ package.name }}{% endblock %}
+{% block page_title %}{{ package.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{{ package.name }}</h1><p>Khách hàng: <a href="/customers/{{ package.customer_id }}" style="color:var(--primary);">{{ package.customer.name if package.customer else '—' }}</a></p></div>
+  <div class="page-header-actions">
+    <a href="/managed-it" class="btn btn-secondary">← Danh sách</a>
+    <a href="/managed-it/{{ package.id }}/edit" class="btn btn-secondary">Sửa</a>
+    <form method="post" action="/managed-it/{{ package.id }}/delete" style="display:inline;">
+      <button type="submit" class="btn btn-danger" data-confirm="Xóa gói '{{ package.name }}'?">Xóa</button>
+    </form>
+  </div>
+</div>
+<div class="card"><div class="card-body">
+  {% set days_left = (package.expiry_date - today).days if package.expiry_date and today else None %}
+  {% if days_left is not none and days_left <= 30 %}
+  <div class="flash flash-error" style="margin-bottom:20px;">⚠️ Gói này sẽ hết hạn trong <strong>{{ days_left }} ngày</strong>!</div>
+  {% endif %}
+  <div class="info-row"><span class="info-label">Khách hàng</span><span class="info-value"><a href="/customers/{{ package.customer_id }}" style="color:var(--primary);font-weight:600;">{{ package.customer.name if package.customer else '—' }}</a></span></div>
+  <div class="info-row"><span class="info-label">Giá</span><span class="info-value" style="font-weight:700;color:var(--primary);">{% if package.price %}{{ "{:,.0f}".format(package.price) }}đ{% else %}—{% endif %}</span></div>
+  <div class="info-row"><span class="info-label">Chu kỳ</span><span class="info-value"><span class="badge badge-blue">{{ package.billing_cycle or '—' }}</span></span></div>
+  <div class="info-row"><span class="info-label">Ngày bắt đầu</span><span class="info-value">{{ package.start_date.strftime('%d/%m/%Y') if package.start_date else '—' }}</span></div>
+  <div class="info-row"><span class="info-label">Ngày hết hạn</span><span class="info-value">{{ package.expiry_date.strftime('%d/%m/%Y') if package.expiry_date else '—' }}{% if days_left is not none %} <span class="badge {% if days_left <= 7 %}days-critical{% elif days_left <= 30 %}days-warning{% else %}days-ok{% endif %}">{{ days_left }} ngày</span>{% endif %}</span></div>
+  <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge {% if package.status.value == 'active' %}badge-green{% elif package.status.value == 'expired' %}badge-red{% else %}badge-gray{% endif %}">{{ package.status.value }}</span></span></div>
+  {% if package.description %}<div class="info-row"><span class="info-label">Mô tả</span><span class="info-value" style="white-space:pre-wrap;">{{ package.description }}</span></div>{% endif %}
+  {% if package.notes %}<div class="info-row"><span class="info-label">Ghi chú</span><span class="info-value">{{ package.notes }}</span></div>{% endif %}
+</div></div>
+{% endblock %}

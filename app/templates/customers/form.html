@@ -1,1 +1,74 @@
-Customer form
+{% extends "base.html" %}
+{% block title %}{% if customer %}Sửa{% else %}Thêm{% endif %} Khách hàng{% endblock %}
+{% block page_title %}{% if customer %}Sửa khách hàng{% else %}Thêm khách hàng mới{% endif %}{% endblock %}
+{% block page_subtitle %}{% if customer %}Cập nhật thông tin {{ customer.name }}{% else %}Điền thông tin khách hàng{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{% if customer %}Sửa: {{ customer.name }}{% else %}Thêm khách hàng mới{% endif %}</h1>
+  </div>
+  <div class="page-header-actions">
+    <a href="/customers" class="btn btn-secondary">← Quay lại</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" action="{% if customer %}/customers/{{ customer.id }}/update{% else %}/customers/{% endif %}">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Tên khách hàng <span class="required">*</span></label>
+          <input type="text" name="name" class="form-control" value="{{ customer.name if customer else '' }}" placeholder="Nguyễn Văn A" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Loại khách hàng</label>
+          <select name="customer_type" class="form-control">
+            <option value="individual" {% if not customer or customer.customer_type.value == 'individual' %}selected{% endif %}>👤 Cá nhân</option>
+            <option value="business" {% if customer and customer.customer_type.value == 'business' %}selected{% endif %}>🏢 Doanh nghiệp</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tên công ty</label>
+          <input type="text" name="company_name" class="form-control" value="{{ customer.company_name if customer else '' }}" placeholder="Công ty TNHH ABC">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mã số thuế (MST)</label>
+          <input type="text" name="tax_code" class="form-control" value="{{ customer.tax_code if customer else '' }}" placeholder="0123456789">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" value="{{ customer.email if customer else '' }}" placeholder="email@example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Số điện thoại</label>
+          <input type="text" name="phone" class="form-control" value="{{ customer.phone if customer else '' }}" placeholder="0901234567">
+        </div>
+
+        <div class="form-group col-span-2">
+          <label class="form-label">Địa chỉ</label>
+          <input type="text" name="address" class="form-control" value="{{ customer.address if customer else '' }}" placeholder="123 Đường ABC, Quận 1, TP.HCM">
+        </div>
+
+        <div class="form-group col-span-2">
+          <label class="form-label">Ghi chú</label>
+          <textarea name="notes" class="form-control" placeholder="Ghi chú về khách hàng...">{{ customer.notes if customer else '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Lưu khách hàng
+        </button>
+        <a href="/customers" class="btn btn-secondary">Hủy</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

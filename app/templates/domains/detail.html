@@ -1,1 +1,45 @@
-Domain detail
+{% extends "base.html" %}
+{% block title %}{{ domain.domain_name }}{% endblock %}
+{% block page_title %}{{ domain.domain_name }}{% endblock %}
+
+{% block content %}
+{% set days_left = (domain.expiry_date - today).days if domain.expiry_date and today else None %}
+{% if days_left is not none and days_left <= 30 %}
+<div class="flash flash-error" style="margin-bottom:20px;">
+  ⚠️ Domain này sẽ hết hạn trong <strong>{{ days_left }} ngày</strong> ({{ domain.expiry_date.strftime('%d/%m/%Y') }})!
+  {% if not domain.auto_renew %}Auto renew chưa bật.{% endif %}
+</div>
+{% endif %}
+
+<div class="page-header">
+  <div class="page-header-left"><h1>{{ domain.domain_name }}</h1><p>Nhà đăng ký: {{ domain.registrar or '—' }}</p></div>
+  <div class="page-header-actions">
+    <a href="/domains" class="btn btn-secondary">← Danh sách</a>
+    <a href="/domains/{{ domain.id }}/edit" class="btn btn-secondary">Sửa</a>
+    <form method="post" action="/domains/{{ domain.id }}/delete" style="display:inline;">
+      <button type="submit" class="btn btn-danger" data-confirm="Xóa domain '{{ domain.domain_name }}'?">Xóa</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="info-row"><span class="info-label">Khách hàng</span><span class="info-value"><a href="/customers/{{ domain.customer_id }}" style="color:var(--primary);font-weight:600;">{{ domain.customer.name if domain.customer else '—' }}</a></span></div>
+    {% if domain.project %}<div class="info-row"><span class="info-label">Dự án</span><span class="info-value"><a href="/projects/{{ domain.project_id }}" style="color:var(--primary);">{{ domain.project.name }}</a></span></div>{% endif %}
+    <div class="info-row"><span class="info-label">Nhà đăng ký</span><span class="info-value">{{ domain.registrar or '—' }}</span></div>
+    <div class="info-row"><span class="info-label">Trạng thái</span><span class="info-value"><span class="badge {% if domain.status.value == 'active' %}badge-green{% elif domain.status.value == 'expired' %}badge-red{% else %}badge-gray{% endif %}">{{ domain.status.value }}</span></span></div>
+    <div class="info-row"><span class="info-label">Ngày đăng ký</span><span class="info-value">{{ domain.registration_date.strftime('%d/%m/%Y') if domain.registration_date else '—' }}</span></div>
+    <div class="info-row">
+      <span class="info-label">Ngày hết hạn</span>
+      <span class="info-value">
+        {{ domain.expiry_date.strftime('%d/%m/%Y') if domain.expiry_date else '—' }}
+        {% if days_left is not none %}
+          <span class="badge {% if days_left <= 7 %}days-critical{% elif days_left <= 30 %}days-warning{% else %}days-ok{% endif %}" style="margin-left:8px;">{{ days_left }} ngày</span>
+        {% endif %}
+      </span>
+    </div>
+    <div class="info-row"><span class="info-label">Auto renew</span><span class="info-value">{% if domain.auto_renew %}<span class="badge badge-green">✓ Bật</span>{% else %}<span class="badge badge-gray">Tắt</span>{% endif %}</span></div>
+    {% if domain.notes %}<div class="info-row"><span class="info-label">Ghi chú</span><span class="info-value" style="white-space:pre-wrap;">{{ domain.notes }}</span></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

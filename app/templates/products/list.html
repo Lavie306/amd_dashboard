@@ -1,1 +1,62 @@
-Products list
+{% extends "base.html" %}
+{% block title %}Sản phẩm{% endblock %}
+{% block page_title %}Quản lý Sản phẩm{% endblock %}
+{% block page_subtitle %}{{ products|length }} sản phẩm nội bộ{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>Danh sách Sản phẩm</h1><p>Quản lý sản phẩm phần mềm nội bộ</p></div>
+  <div class="page-header-actions"><a href="/products/new" class="btn btn-primary">+ Thêm sản phẩm</a></div>
+</div>
+
+<div class="filter-bar">
+  <form method="get" action="/products" style="display:flex;align-items:center;gap:12px;flex:1;">
+    <div class="filter-search" style="flex:1;min-width:200px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" name="q" value="{{ q or '' }}" placeholder="Tìm tên sản phẩm...">
+    </div>
+    <button type="submit" class="btn btn-secondary">Tìm</button>
+    {% if q %}<a href="/products" class="btn btn-secondary">Xóa lọc</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    {% if products %}
+    <table>
+      <thead><tr><th>Tên sản phẩm</th><th>Phiên bản</th><th>Trạng thái</th><th>Demo</th><th>Repo</th><th style="text-align:right;">Thao tác</th></tr></thead>
+      <tbody>
+        {% for prod in products %}
+        <tr>
+          <td>
+            <div style="font-weight:700;">{{ prod.name }}</div>
+            {% if prod.description %}<div style="font-size:12px;color:var(--text-secondary);">{{ prod.description[:60] }}{% if prod.description|length > 60 %}...{% endif %}</div>{% endif %}
+          </td>
+          <td><span class="badge badge-gray">v{{ prod.version or '—' }}</span></td>
+          <td><span class="badge {% if prod.status and prod.status.value == 'active' %}badge-green{% elif prod.status and prod.status.value == 'archived' %}badge-gray{% else %}badge-yellow{% endif %}">{{ prod.status.value if prod.status else '—' }}</span></td>
+          <td>{% if prod.demo_url %}<a href="{{ prod.demo_url }}" target="_blank" class="btn btn-sm btn-secondary">🔗 Demo</a>{% else %}—{% endif %}</td>
+          <td>{% if prod.repo_url %}<a href="{{ prod.repo_url }}" target="_blank" class="btn btn-sm btn-secondary">📁 Repo</a>{% else %}—{% endif %}</td>
+          <td style="text-align:right;">
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <a href="/products/{{ prod.id }}" class="btn btn-sm btn-secondary">Xem</a>
+              <a href="/products/{{ prod.id }}/edit" class="btn btn-sm btn-secondary">Sửa</a>
+              <form method="post" action="/products/{{ prod.id }}/delete" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Xóa sản phẩm '{{ prod.name }}'?">Xóa</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <h3>Chưa có sản phẩm nào</h3>
+      <p>Thêm sản phẩm phần mềm nội bộ đầu tiên</p>
+      <a href="/products/new" class="btn btn-primary">Thêm sản phẩm</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
