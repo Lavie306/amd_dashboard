@@ -23,8 +23,8 @@
       {% if invoice.project %}<div class="info-row"><span class="info-label">Dự án</span><span class="info-value"><a href="/projects/{{ invoice.project_id }}" style="color:var(--primary);">{{ invoice.project.name }}</a></span></div>{% endif %}
       <div class="info-row"><span class="info-label">Ngày xuất</span><span class="info-value">{{ invoice.issue_date.strftime('%d/%m/%Y') if invoice.issue_date else '—' }}</span></div>
       <div class="info-row"><span class="info-label">Số tiền</span><span class="info-value">{{ "{:,.0f}".format(invoice.amount or 0) }}đ</span></div>
-      <div class="info-row"><span class="info-label">VAT</span><span class="info-value"><span class="badge badge-yellow">{{ invoice.vat_percent or 10 }}%</span></span></div>
-      <div class="info-row"><span class="info-label">Tổng cộng</span><span class="info-value" style="font-size:20px;font-weight:800;color:var(--primary);">{{ "{:,.0f}".format(invoice.total_amount or 0) }}đ</span></div>
+      <div class="info-row"><span class="info-label">VAT</span><span class="info-value"><span class="badge badge-yellow">{{ invoice.vat|int if invoice.vat is not none else 10 }}%</span></span></div>
+      <div class="info-row"><span class="info-label">Tổng cộng</span><span class="info-value" style="font-size:20px;font-weight:800;color:var(--primary);">{{ "{:,.0f}".format(invoice.total or 0) }}đ</span></div>
       {% if invoice.notes %}<div class="info-row"><span class="info-label">Ghi chú</span><span class="info-value">{{ invoice.notes }}</span></div>{% endif %}
     </div>
   </div>

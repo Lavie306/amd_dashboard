@@ -134,3 +134,56 @@ def delete_invoice(
         db.delete(invoice)
         db.commit()
     return RedirectResponse(url="/invoices", status_code=302)
+
+
+@router.get("/{invoice_id}/edit", response_class=HTMLResponse)
+def edit_invoice_form(
+    invoice_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Không tìm thấy hóa đơn")
+    customers = db.query(Customer).order_by(Customer.name).all()
+    projects = db.query(Project).order_by(Project.name).all()
+    return templates.TemplateResponse(
+        "invoices/form.html",
+        {"request": request, "current_user": current_user, "invoice": invoice, "customers": customers, "projects": projects},
+    )
+
+
+@router.post("/{invoice_id}/update")
+def update_invoice(
+    invoice_id: int,
+    customer_id: int = Form(...),
+    project_id: Optional[str] = Form(None),
+    invoice_number: str = Form(...),
+    issue_date: str = Form(...),
+    amount: str = Form(...),
+    vat: str = Form("10"),
+    notes: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Không tìm thấy hóa đơn")
+    
+    amt = Decimal(amount)
+    v = Decimal(vat)
+    total = amt * (1 + v / 100)
+    proj_id = int(project_id) if project_id and project_id.strip() else None
+    
+    invoice.customer_id = customer_id
+    invoice.project_id = proj_id
+    invoice.invoice_number = invoice_number
+    invoice.issue_date = date.fromisoformat(issue_date) if issue_date and issue_date.strip() else date.today()
+    invoice.amount = amt
+    invoice.vat = v
+    invoice.total = total
+    invoice.notes = notes
+    
+    db.commit()
+    return RedirectResponse(url=f"/invoices/{invoice_id}", status_code=302)
